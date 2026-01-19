@@ -66,6 +66,13 @@ const banks = [
   "Pan",
   "Safra",
   "BMG",
+  "CredCesta",
+  "Banco Master",
+  "Banrisul",
+  "Banco Daycoval",
+  "Ciasprev",
+  "Paraná Banco",
+  "Capital Consig Sociedade de Crédito Direto",
   "Outro",
 ];
 
