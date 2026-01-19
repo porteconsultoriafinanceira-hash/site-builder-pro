@@ -296,7 +296,7 @@ const DiagnosticoForm = () => {
                       </div>
 
                       <div>
-                        <Label>Valor aproximado do crédito contratado</Label>
+                        <Label>Valor liberado em conta</Label>
                         <Input
                           placeholder="R$ 0,00"
                           {...register(`loans.${index}.creditValue`)}
