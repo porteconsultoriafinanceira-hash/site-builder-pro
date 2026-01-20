@@ -1,46 +1,44 @@
-// backend/server.js
-import express from 'express';
-import path from 'path';
-import bodyParser from 'body-parser';
-import dotenv from 'dotenv';
-import { fileURLToPath } from 'url';
-
-dotenv.config();
+import express from "express";
+import cors from "cors";
+import mercadopago from "mercadopago";
+import path from "path";
 
 const app = express();
+app.use(cors());
+app.use(express.json());
 
-// ----- Setup diretórios para ES Module -----
-const __filename = fileURLToPath(import.meta.url);
-const __dirname = path.dirname(__filename);
-
-// Middlewares
-app.use(bodyParser.json());
-app.use(bodyParser.urlencoded({ extended: true }));
-
-// ---------- ROTAS DA API ----------
-app.get('/api/ping', (req, res) => {
-  res.json({ message: 'Pong!' });
+mercadopago.configure({
+  access_token: process.env.MP_ACCESS_TOKEN,
 });
 
-app.get('/api/mercadolivre/token', async (req, res) => {
-  const clientId = process.env.MERCADO_LIVRE_CLIENT_ID;
-  const clientSecret = process.env.MERCADO_LIVRE_CLIENT_SECRET;
-  const redirectUri = process.env.MERCADO_LIVRE_REDIRECT_URI;
+// Serve Frontend
+app.use(express.static("dist"));
 
-  res.json({ clientId, clientSecret, redirectUri });
+// Endpoint para criar preference
+app.post("/api/create_preference", async (req, res) => {
+  try {
+    const { items } = req.body;
+    const preference = {
+      items,
+      back_urls: {
+        success: "https://seusite.com/success",
+        failure: "https://seusite.com/failure"
+      },
+      auto_return: "approved",
+    };
+
+    const mpRes = await mercadopago.preferences.create(preference);
+    return res.json({ id: mpRes.body.id });
+  } catch (err) {
+    console.error(err);
+    return res.status(500).json({ error: "Error creating preference" });
+  }
 });
 
-// ---------- SERVIR FRONTEND REACT ----------
-const frontendPath = path.join(__dirname, '../frontend/build');
-app.use(express.static(frontendPath));
-
-// SPA fallback (somente rotas que não começam com /api)
-app.get(/^\/(?!api).*/, (req, res) => {
-  res.sendFile(path.join(frontendPath, 'index.html'));
+// Fallback para SPA
+app.get("*", (_, res) => {
+  res.sendFile(path.resolve("dist", "index.html"));
 });
 
-// ---------- START SERVER ----------
 const PORT = process.env.PORT || 3000;
-app.listen(PORT, () => {
-  console.log(`Servidor rodando na porta ${PORT}`);
-});
+app.listen(PORT, () => console.log(`Server running on ${PORT}`));
