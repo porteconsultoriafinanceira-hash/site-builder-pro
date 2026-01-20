@@ -33,6 +33,24 @@ useEffect(() => {
   initiateCheckout();
 }, []);
 
+
+      const data = await response.json();
+
+      // 👉 Redireciona para o Mercado Pago REAL
+      window.location.href =
+        "https://www.mercadopago.com.br/checkout/v1/redirect?pref_id=" +
+        data.id;
+
+    } catch (err) {
+      console.error(err);
+      setError("Erro ao iniciar pagamento");
+      setIsLoading(false);
+    }
+  };
+
+  initiateCheckout();
+}, []);
+
       }
 
       const finalEmail = sessionStorage.getItem("userEmail");
