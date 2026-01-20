@@ -11,11 +11,10 @@ const __dirname = path.dirname(__filename);
 // Serve arquivos estáticos do build
 app.use(express.static(path.join(__dirname, 'dist')));
 
-// Single Page App: devolve index.html para todas as rotas
+// SPA fallback: devolve index.html para todas as rotas
 app.get('*', (req, res) => {
   res.sendFile(path.join(__dirname, 'dist', 'index.html'));
 });
 
+// Escuta a porta do Railway
 app.listen(PORT, '0.0.0.0', () => {
-  console.log(`Server listening on port ${PORT}`);
-});
