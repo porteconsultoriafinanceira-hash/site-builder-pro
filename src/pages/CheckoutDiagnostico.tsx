@@ -8,46 +8,29 @@ const CheckoutDiagnostico = () => {
 
   useEffect(() => {
     const initiateCheckout = async () => {
-      const email = sessionStorage.getItem("userEmail");
-      
-      if (!email) {
-        setError("Sessão expirada. Por favor, preencha o formulário novamente.");
-        setIsLoading(false);
-        return;
-      }
-
       try {
-        // In production, this would call the backend API
-        // For now, we'll simulate the checkout process
-        const response = await fetch("/api/checkout", {
+        const response = await fetch("/api/create-preference", {
           method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({
-            email,
-            product: "diagnostico",
-          }),
+          headers: {
+            "Content-Type": "application/json"
+          }
         });
 
-        if (response.ok) {
-          const data = await response.json();
-          if (data.checkoutUrl) {
-            window.location.href = data.checkoutUrl;
-            return;
-          }
+        if (!response.ok) {
+          throw new Error("Erro ao criar preferência");
         }
 
-        // If API is not available, simulate redirect for demo
-        // In production, remove this and handle the error
-        setTimeout(() => {
-          // Simulating successful payment redirect
-          window.location.href = "/diagnostico?status=approved";
-        }, 2000);
+        const data = await response.json();
+
+        // 🔥 Redireciona para o Mercado Pago REAL
+        window.location.href =
+          "https://www.mercadopago.com.br/checkout/v1/redirect?pref_id=" +
+          data.id;
 
       } catch (err) {
-        // For demo purposes, redirect to success page
-        setTimeout(() => {
-          window.location.href = "/diagnostico?status=approved";
-        }, 2000);
+        console.error(err);
+        setError("Erro ao iniciar pagamento");
+        setIsLoading(false);
       }
     };
 
@@ -80,7 +63,6 @@ const CheckoutDiagnostico = () => {
           Pagamento seguro processado pelo Mercado Pago
         </h1>
 
-        {/* Trust indicators */}
         <div className="flex flex-wrap justify-center gap-4 mb-8 text-sm text-muted-foreground">
           <div className="flex items-center gap-1">
             <Shield className="w-4 h-4 text-verde-seguranca" />
