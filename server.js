@@ -1,22 +1,27 @@
 // backend/server.js
-const express = require('express');
-const path = require('path');
-const bodyParser = require('body-parser');
-require('dotenv').config();
+import express from 'express';
+import path from 'path';
+import bodyParser from 'body-parser';
+import dotenv from 'dotenv';
+import { fileURLToPath } from 'url';
+
+dotenv.config();
 
 const app = express();
+
+// ----- Setup diretórios para ES Module -----
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
 
 // Middlewares
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: true }));
 
 // ---------- ROTAS DA API ----------
-// Exemplo: rota teste
 app.get('/api/ping', (req, res) => {
   res.json({ message: 'Pong!' });
 });
 
-// Exemplo de integração Mercado Livre
 app.get('/api/mercadolivre/token', async (req, res) => {
   const clientId = process.env.MERCADO_LIVRE_CLIENT_ID;
   const clientSecret = process.env.MERCADO_LIVRE_CLIENT_SECRET;
@@ -29,7 +34,7 @@ app.get('/api/mercadolivre/token', async (req, res) => {
 const frontendPath = path.join(__dirname, '../frontend/build');
 app.use(express.static(frontendPath));
 
-// SPA fallback: somente se não for rota /api
+// SPA fallback (somente rotas que não começam com /api)
 app.get(/^\/(?!api).*/, (req, res) => {
   res.sendFile(path.join(frontendPath, 'index.html'));
 });
