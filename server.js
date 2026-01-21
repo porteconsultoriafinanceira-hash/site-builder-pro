@@ -4,6 +4,11 @@ import mercadopago from "mercadopago";
 import path from "path";
 import { fileURLToPath } from "url";
 
+if (!process.env.MP_ACCESS_TOKEN) {
+  console.error("❌ MP_ACCESS_TOKEN não definido");
+  process.exit(1);
+}
+
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
@@ -16,7 +21,6 @@ mercadopago.configure({
   access_token: process.env.MP_ACCESS_TOKEN
 });
 
-// 🔥 ENDPOINT DO PAGAMENTO
 app.post("/api/create-preference", async (req, res) => {
   try {
     const preference = {
@@ -27,15 +31,21 @@ app.post("/api/create-preference", async (req, res) => {
           unit_price: 100
         }
       ],
+      sandbox: true,
       back_urls: {
-        success: "https://google.com",
-        failure: "https://google.com"
+        success: "https://SEU-DOMINIO.up.railway.app/diagnostico?status=approved",
+        failure: "https://SEU-DOMINIO.up.railway.app/diagnostico?status=failure",
+        pending: "https://SEU-DOMINIO.up.railway.app/diagnostico?status=pending"
       },
       auto_return: "approved"
     };
 
     const response = await mercadopago.preferences.create(preference);
-    res.json({ id: response.body.id });
+
+    res.json({
+      id: response.body.id,
+      init_point: response.body.sandbox_init_point
+    });
 
   } catch (error) {
     console.error(error);
@@ -43,7 +53,6 @@ app.post("/api/create-preference", async (req, res) => {
   }
 });
 
-// 👉 Servir o frontend buildado
 app.use(express.static(path.join(__dirname, "dist")));
 
 app.get("*", (req, res) => {
